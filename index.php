@@ -28,7 +28,11 @@
                 <h5 class="text-white">Humidity</h5>
                 <canvas id="humi" class="p-2" width="100" height="150"></canvas>
             </div>
-            <div class="col-sm-6">
+            <div class="col-3">
+                <h5 class="text-white">Water Tank Level</h5>
+                <canvas id="wt" class="p-2" width="100" height="150"></canvas>
+            </div>
+            <div class="col-sm-3">
                 <div class="row">
                     <div class="col-6">
                         <h5 class="text-white">Fan</h5>
@@ -37,10 +41,10 @@
                         <h5 class="text-white">Soil Moisture</h5>
                         <div id="gauge-test" class="gauge gauge-danger" style="--gauge-value:400;--gauge-max-value:5000;"></div>
                     </div>
-                    <div class="col-6">
+                    <!-- <div class="col-6">
                         <h5 class="text-white">Water Level</h5>
-                        <canvas id="bar-meter" class="p-4" width="100" height="120"></canvas>
-                    </div>
+                        <canvas id="wt" class="p-4" width="100" height="120"></canvas>
+                    </div> -->
 
                 </div>
 
@@ -120,7 +124,7 @@
                 // Background color.
                 bgColor: '#28a748',
                 // Font color.
-                fontColor: '#ffffff'
+                fontColor: '#000'
             },
             // Actual number value.
             value: 0
@@ -169,7 +173,7 @@
                 // Background color.
                 bgColor: '#28a748',
                 // Font color.
-                fontColor: '#ffffff'
+                fontColor: '#000'
             },
             // Actual number value.
             value: 0
@@ -207,29 +211,49 @@
 
 
         /* Options */
-        var options = {
-            // Minimum number.
-            min: 0,
-            // Maximum number.
-            max: 3000,
-            // Background dash color.
-            dashColor: '#e5e5e5',
-            // Bar color.
-            barColor: '#007bfb',
-            // Bar speed.
-            speed: 5,
-            // Bar color gradient or not.
-            gradient: true
-        };
-
+        var options_wt = {
+            // Minimum value at the bottom
+            min: {
+                // Font color.
+                fontColor: 'black',
+                // Number value.
+                value: 0,
+                // Background color.
+                bgColor: '#fff'
+            },
+            // Maximum value at the top.
+            max: {
+                // Font color.
+                fontColor: 'black',
+                // Number value.
+                value: 3000,
+                // Background color.
+                bgColor: '#fff'
+            },
+            // Bar,
+            bar: {
+                // Border color.
+                borderColor: '#fff',
+                // Bar fill color.
+                fillColor: '#fff',
+                // Bar color gradient or not.
+                graident: false,
+                // Scrolling speed.
+                speed: 2
+            },
+            // Marker,
+            marker: {
+                // Background color.
+                bgColor: '#28a748',
+                // Font color.
+                fontColor: '#000'
+            },
+            // Actual number value.
+            value: 0
+        }
         /* Constructor */
-        var barMeter = new zeu.BarMeter('bar-meter', options);
+        var wt = new zeu.VolumeMeter('wt', options_wt);
 
-        /* Setter */
-        // barMeter.value = 0;
-        // barMeter.dashColor = '#e5e5e5';
-        // barMeter.barColor = '#007bfb';
-        // barMeter.speed = 10;
 
     </script>
     <script>
@@ -356,8 +380,16 @@
             setInterval(function(){ 
                 $.get("http://192.168.31.114/Plants/lettuce_1/API_DV/readOne_lettuce_wlvl_sm.php", function(data, status){
                     var test = $("#gauge-test").css("--gauge-value");
-                    $("#gauge-test").css("--gauge-value", data.soil_moisture);
-                    barMeter.value = data.water_tank_level;
+                    if(wt.value <= 1500){
+                        wt.value = data.water_tank_level;
+                        wt.barFillColor = '#DC143C';
+                        wt.markerBgColor = '#DC143C';
+                    }
+                    else{
+                        wt.value = data.water_tank_level;
+                        wt.barFillColor = '#00FF00';
+                        wt.markerBgColor = '#00FF00';                        
+                    }
 
                     if(data.soil_moisture >= 500){
                         $( "#gauge-test" ).removeClass( "gauge-danger gauge-success" );
