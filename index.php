@@ -69,6 +69,12 @@
     
     <script>
         $( document ).ready(function() {
+            
+        });
+    </script>
+
+    <script>
+        $( document ).ready(function() {
             var test = $("#gauge-test").css("--gauge-value");
             $("#gauge-test").css("--gauge-value", 500);
         });
