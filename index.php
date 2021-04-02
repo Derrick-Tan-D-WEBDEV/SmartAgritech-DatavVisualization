@@ -35,11 +35,11 @@
                         <canvas id="fan" width="100" height="70"></canvas>
                         <br>
                         <h5 class="text-white">Soil Moisture</h5>
-                        <div id="gauge-test" class="gauge gauge-success" style="--gauge-value:400;--gauge-max-value:1000;"></div>
+                        <div id="gauge-test" class="gauge gauge-danger" style="--gauge-value:400;--gauge-max-value:5000;"></div>
                     </div>
                     <div class="col-6">
                         <h5 class="text-white">Water Level</h5>
-                        <canvas id="bar-meter" width="100" height="120"></canvas>
+                        <canvas id="bar-meter" class="p-4" width="100" height="120"></canvas>
                     </div>
 
                 </div>
@@ -67,17 +67,9 @@
 	<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-streaming@latest/dist/chartjs-plugin-streaming.min.js"></script>
     
-    <script>
-        $( document ).ready(function() {
-            
-        });
-    </script>
+
 
     <script>
-        $( document ).ready(function() {
-            var test = $("#gauge-test").css("--gauge-value");
-            $("#gauge-test").css("--gauge-value", 500);
-        });
 
         /* Digital Clock Options */
         var options_digitalClock = {
@@ -221,15 +213,15 @@
         /* Options */
         var options = {
             // Minimum number.
-            min: -100,
+            min: 0,
             // Maximum number.
-            max: 100,
+            max: 3000,
             // Background dash color.
             dashColor: '#e5e5e5',
             // Bar color.
             barColor: '#007bfb',
             // Bar speed.
-            speed: 10,
+            speed: 5,
             // Bar color gradient or not.
             gradient: true
         };
@@ -238,10 +230,10 @@
         var barMeter = new zeu.BarMeter('bar-meter', options);
 
         /* Setter */
-        barMeter.value = 0;
-        barMeter.dashColor = '#e5e5e5';
-        barMeter.barColor = '#007bfb';
-        barMeter.speed = 5;
+        // barMeter.value = 0;
+        // barMeter.dashColor = '#e5e5e5';
+        // barMeter.barColor = '#007bfb';
+        // barMeter.speed = 10;
 
     </script>
     <script>
@@ -373,5 +365,28 @@
 		});
 
 	</script>
+
+    <script>
+        $( document ).ready(function() {
+            setInterval(function(){ 
+                $.get("http://192.168.31.114/Plants/lettuce_1/API_DV/readOne_lettuce_wlvl_sm.php", function(data, status){
+                    var test = $("#gauge-test").css("--gauge-value");
+                    $("#gauge-test").css("--gauge-value", data.soil_moisture);
+                    barMeter.value = data.water_tank_level;
+
+                    if(data.soil_moisture >= 500){
+                        $( "#gauge-test" ).removeClass( "gauge-danger gauge-success" );
+                        $( "#gauge-test" ).addClass( "gauge-success" );
+                    }
+
+                    if(data.soil_moisture <= 500 || data.soil_moisture >= 3500){
+                        $( "#gauge-test" ).removeClass( "gauge-danger gauge-success" );
+                        $( "#gauge-test" ).addClass( "gauge-danger" );
+                    }
+                });
+            }, 1000);
+
+        });
+    </script>
   </body>
 </html>
