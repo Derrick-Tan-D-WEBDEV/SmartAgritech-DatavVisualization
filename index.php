@@ -131,9 +131,7 @@
         /* Temp Setter */
         //okay = #00FF00
         //not okay = #DC143C
-        temp.value = 30;
-        temp.barFillColor = '#DC143C';
-        temp.markerBgColor = '#DC143C';
+
 
         /* Options */
         var options_humi = {
@@ -182,9 +180,7 @@
         /* Temp Setter */
         //okay = #00FF00
         //not okay = #DC143C
-        humi.value = 60;
-        humi.barFillColor = '#00FF00';
-        humi.markerBgColor = '#00FF00';
+
 
         /* Options */
         var options_fan = {
@@ -237,6 +233,8 @@
 
     </script>
     <script>
+        var temp_data = null;
+
 		var chartColors = {
 			red: 'rgb(255, 99, 132)',
 			orange: 'rgb(255, 159, 64)',
@@ -247,16 +245,29 @@
 			grey: 'rgb(201, 203, 207)'
 		};
 
-		function randomScalingFactor() {
-			return (Math.random() > 0.5 ? 1.0 : 0) * Math.round(Math.random() * 100);
+		function getting_data() {
+            $.get("http://192.168.31.114/Plants/lettuce_1/API_DV/readOne_lettuce_temp_humi.php", function(data, status){
+                temp_data = data;
+            });
+            return temp_data;
 		}
 
 		function onRefresh(chart) {
+
 			chart.config.data.datasets.forEach(function(dataset) {
-				dataset.data.push({
-					x: Date.now(),
-					y: randomScalingFactor()
-				});
+                getting_data(); 
+                if(dataset.label == "Temperature"){
+                    dataset.data.push({
+                        x: Date.now(),
+                        y: temp_data.temperature
+                    });
+                }else{
+                    dataset.data.push({
+                        x: Date.now(),
+                        y: temp_data.humidity
+                    });
+                }
+
 			});
 		}
 
@@ -283,8 +294,7 @@
 			},
 			options: {
 				title: {
-					display: false,
-					text: 'Temperature'
+					display: false
 				},
 				scales: {
 					xAxes: [{
@@ -338,31 +348,6 @@
 			window.myChart = new Chart(ctx, config);
 		};
 
-		document.getElementById('randomizeData').addEventListener('click', function() {
-			config.data.datasets.forEach(function(dataset) {
-				dataset.data.forEach(function(dataObj) {
-					dataObj.y = randomScalingFactor();
-				});
-			});
-			window.myChart.update();
-		});
-
-		var colorNames = Object.keys(chartColors);
-		document.getElementById('addDataset').addEventListener('click', function() {
-			var colorName = colorNames[config.data.datasets.length % colorNames.length];
-			var newColor = chartColors[colorName];
-			var newDataset = {
-				label: 'Dataset ' + (config.data.datasets.length + 1),
-				backgroundColor: color(newColor).alpha(0.5).rgbString(),
-				borderColor: newColor,
-				fill: false,
-				lineTension: 0,
-				data: []
-			};
-
-			config.data.datasets.push(newDataset);
-			window.myChart.update();
-		});
 
 	</script>
 
@@ -383,6 +368,46 @@
                         $( "#gauge-test" ).removeClass( "gauge-danger gauge-success" );
                         $( "#gauge-test" ).addClass( "gauge-danger" );
                     }
+                });
+            }, 1000);
+
+            setInterval(function(){ 
+                $.get("http://192.168.31.114/Plants/lettuce_1/API_DV/readOne_lettuce_temp_humi.php", function(data, status){
+                    temp.value = data.temperature;
+                    temp.barFillColor = '#DC143C';
+                    temp.markerBgColor = '#DC143C';
+
+                    if(humi.value <= 50){
+                        humi.value = data.humidity;
+                        humi.barFillColor = '#DC143C';
+                        humi.markerBgColor = '#DC143C';
+                    }
+                    else{
+                        humi.value = data.humidity;
+                        humi.barFillColor = '#00FF00';
+                        humi.markerBgColor = '#00FF00';                        
+                    }
+
+                    if(temp.value <= 24 && temp.value >= 28){
+                        temp.value = data.temperature;
+                        temp.barFillColor = '#DC143C';
+                        temp.markerBgColor = '#DC143C';
+                    }
+                    else{
+                        temp.value = data.temperature;
+                        temp.barFillColor = '#00FF00';
+                        temp.markerBgColor = '#00FF00';                        
+                    }
+
+                    // if(data.soil_moisture >= 500){
+                    //     $( "#gauge-test" ).removeClass( "gauge-danger gauge-success" );
+                    //     $( "#gauge-test" ).addClass( "gauge-success" );
+                    // }
+
+                    // if(data.soil_moisture <= 500 || data.soil_moisture >= 3500){
+                    //     $( "#gauge-test" ).removeClass( "gauge-danger gauge-success" );
+                    //     $( "#gauge-test" ).addClass( "gauge-danger" );
+                    // }
                 });
             }, 1000);
 
